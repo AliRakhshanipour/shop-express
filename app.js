@@ -22,8 +22,14 @@ async function main(params) {
  });
 
  app.use((err, req, res, next) => {
-  const status = err?.status ?? err?.statusCode ?? 500;
-  const message = err?.message ?? 'internal server error';
+  let status = err?.status ?? err?.statusCode ?? 500;
+  let message = err?.message ?? 'internal server error';
+
+  if (err?.name === 'ValidationError') {
+   const { details } = err;
+   message = details?.body?.[0]?.message ?? 'internal server error';
+  }
+
   return res.status(status).json({
    message,
    err,

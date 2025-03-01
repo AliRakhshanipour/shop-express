@@ -68,6 +68,42 @@ async function createProductHandler(req, res, next) {
  }
 }
 
+async function getProductsHandler(req, res, next) {
+ try {
+  const products = await Product.findAll({});
+  res.status(StatusCodes.OK).json({
+   products,
+  });
+ } catch (error) {
+  next(error);
+ }
+}
+
+async function getProductDetails(req, res, next) {
+ try {
+  const { id } = req.params;
+  const product = await Product.findOne({
+   where: { id },
+   include: [
+    { model: ProductDetail, as: 'details' },
+    { model: ProductColor, as: 'colors' },
+    { model: ProductSize, as: 'sizes' },
+   ],
+  });
+
+  if (!product) {
+   throw createHttpError(StatusCodes.NOT_FOUND, 'product not found');
+  }
+  res.status(StatusCodes.OK).json({
+   product,
+  });
+ } catch (error) {
+  next(error);
+ }
+}
+
 module.exports = {
  createProductHandler,
+ getProductsHandler,
+ getProductDetails,
 };
