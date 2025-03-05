@@ -2,8 +2,9 @@ const createHttpError = require('http-errors');
 const { ProductTypes } = require('../../common/product/product.enum');
 const { Product, ProductDetail, ProductColor, ProductSize } = require('./product.model');
 const { StatusCodes } = require('http-status-codes');
+const { request, response } = require('express');
 
-async function createProductHandler(req, res, next) {
+async function createProductHandler(req = request, res = response, next) {
  const transaction = await Product.sequelize.transaction();
  try {
   const { title, description, type, price, discount, active_discount, count, details, colors, sizes } = req.body;
@@ -68,7 +69,7 @@ async function createProductHandler(req, res, next) {
  }
 }
 
-async function getProductsHandler(req, res, next) {
+async function getProductsHandler(req = request, res = response, next) {
  try {
   const products = await Product.findAll({});
   res.status(StatusCodes.OK).json({
@@ -79,7 +80,7 @@ async function getProductsHandler(req, res, next) {
  }
 }
 
-async function getProductDetails(req, res, next) {
+async function getProductDetailsHnadler(req = request, res = response, next) {
  try {
   const { id } = req.params;
   const product = await Product.findOne({
@@ -102,8 +103,26 @@ async function getProductDetails(req, res, next) {
  }
 }
 
+async function deleteProductHandler(req = request, res = response, next) {
+ try {
+  const { id } = req.params;
+  const product = await Product.findByPk(id);
+  if (!product) {
+   throw createHttpError(StatusCodes.NOT_FOUND, 'product not found');
+  }
+  await product.destroy();
+
+  return res.status(StatusCodes.NO_CONTENT).json({
+   message: 'product deleted successfully',
+  });
+ } catch (error) {
+  next(error);
+ }
+}
+
 module.exports = {
  createProductHandler,
  getProductsHandler,
- getProductDetails,
+ getProductDetailsHnadler,
+ deleteProductHandler,
 };
