@@ -1,4 +1,5 @@
 const { Product, ProductDetail, ProductColor, ProductSize } = require('../modules/product/product.model');
+const { User, Otp } = require('../modules/user/user.model');
 const sequelize = require('./sequelize.config');
 
 async function initDatabase() {
@@ -36,7 +37,11 @@ async function initDatabase() {
   onDelete: 'CASCADE',
  });
 
- await sequelize.sync({ alter: true }); // Use alter instead of force
+ // User and Otp associations
+ User.hasOne(Otp, { foreignKey: 'userId', as: 'otp', sourceKey: 'id' });
+ Otp.belongsTo(User, { foreignKey: 'userId', targetKey: 'id' });
+
+ await sequelize.sync({ alter: true });
 }
 
 module.exports = {
